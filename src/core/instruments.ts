@@ -18,11 +18,13 @@ export interface InstrumentEngine {
  * 合成音源：鼓组 / 贝斯 / 和声 / 电吉他全部用 Tone.js 合成器实现，无外部采样。
  */
 export class SynthEngine implements InstrumentEngine {
-  protected drumsBus = new Tone.Volume(0).toDestination()
-  protected bassBus = new Tone.Volume(0).toDestination()
-  protected compBus = new Tone.Volume(0).toDestination()
-  protected guitarBus = new Tone.Volume(0).toDestination()
-  protected clickBus = new Tone.Volume(-6).toDestination()
+  // 总限幅器：多轨叠加超 0dB 时软限幅，避免硬削波的「滋滋」杂音
+  protected limiter = new Tone.Limiter(-1).toDestination()
+  protected drumsBus = new Tone.Volume(0).connect(this.limiter)
+  protected bassBus = new Tone.Volume(0).connect(this.limiter)
+  protected compBus = new Tone.Volume(0).connect(this.limiter)
+  protected guitarBus = new Tone.Volume(0).connect(this.limiter)
+  protected clickBus = new Tone.Volume(-6).connect(this.limiter)
 
   protected kick = new Tone.MembraneSynth({
     pitchDecay: 0.045,
@@ -46,11 +48,11 @@ export class SynthEngine implements InstrumentEngine {
   protected hihatFilter = new Tone.Filter(8200, 'highpass')
   protected openHat = new Tone.NoiseSynth({
     noise: { type: 'white' },
-    envelope: { attack: 0.001, decay: 0.18, sustain: 0 },
+    envelope: { attack: 0.001, decay: 0.12, sustain: 0 },
   })
   protected ride = new Tone.NoiseSynth({
     noise: { type: 'white' },
-    envelope: { attack: 0.002, decay: 0.5, sustain: 0 },
+    envelope: { attack: 0.002, decay: 0.4, sustain: 0 },
   })
   protected rideFilter = new Tone.Filter(6000, 'bandpass')
   protected rim = new Tone.Synth({
@@ -83,13 +85,14 @@ export class SynthEngine implements InstrumentEngine {
     volume: -10,
   })
 
-  // 电吉他：锯波 + 失真 + 低通，走强力和声
+  // 电吉他：锯波 -> 预滤波 -> 失真（4x 过采样抑制混叠毛刺）-> 低通，走强力和声
   protected guitar = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'sawtooth' },
-    envelope: { attack: 0.002, decay: 0.08, sustain: 0.4, release: 0.1 },
-    volume: -12,
+    envelope: { attack: 0.002, decay: 0.08, sustain: 0.35, release: 0.06 },
+    volume: -14,
   })
-  protected guitarDist = new Tone.Distortion(0.45)
+  protected guitarPre = new Tone.Filter(3800, 'lowpass')
+  protected guitarDist = new Tone.Distortion({ distortion: 0.35, oversample: '4x' })
   protected guitarFilter = new Tone.Filter(2800, 'lowpass')
 
   constructor() {
@@ -107,7 +110,7 @@ export class SynthEngine implements InstrumentEngine {
     this.click.connect(this.clickBus)
     this.bass.connect(this.bassBus)
     this.comp.connect(this.compBus)
-    this.guitar.chain(this.guitarDist, this.guitarFilter, this.guitarBus)
+    this.guitar.chain(this.guitarPre, this.guitarDist, this.guitarFilter, this.guitarBus)
   }
 
   drum(kind: DrumKind, time: number, vel = 0.8): void {
@@ -170,8 +173,8 @@ export class SynthEngine implements InstrumentEngine {
     const nodes = [
       this.kick, this.snare, this.snareTone, this.snareFilter, this.hihat, this.hihatFilter,
       this.openHat, this.ride, this.rideFilter, this.rim, this.click, this.bass, this.comp,
-      this.guitar, this.guitarDist, this.guitarFilter,
-      this.drumsBus, this.bassBus, this.compBus, this.guitarBus, this.clickBus,
+      this.guitar, this.guitarPre, this.guitarDist, this.guitarFilter,
+      this.drumsBus, this.bassBus, this.compBus, this.guitarBus, this.clickBus, this.limiter,
     ]
     nodes.forEach(n => n.dispose())
   }
