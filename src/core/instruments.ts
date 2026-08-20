@@ -1,12 +1,12 @@
 import * as Tone from 'tone'
-import type { DrumKind, TrackId } from '../types'
+import type { CompVoice, DrumKind, TrackId } from '../types'
 import { midiToNote } from './theory'
 
 /** 引擎统一接口：合成 / 采样实现可互换 */
 export interface InstrumentEngine {
   drum(kind: DrumKind, time: number, vel?: number): void
   bassNote(midi: number, time: number, dur: number, vel?: number): void
-  compChord(midis: number[], time: number, dur: number, vel?: number): void
+  compChord(midis: number[], time: number, dur: number, vel?: number, voice?: CompVoice): void
   guitarChord(midis: number[], time: number, dur: number, vel?: number): void
   clickTick(time: number, accent: boolean): void
   setTrack(id: TrackId, on: boolean, db: number): void
@@ -85,6 +85,13 @@ export class SynthEngine implements InstrumentEngine {
     volume: -10,
   })
 
+  // 风琴：加法合成drawbar音色（Gospel / Afro 的 comp 音色）
+  protected organ = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'custom', partials: [1, 0.55, 0.35, 0.22, 0.14, 0.09, 0.06, 0.04] },
+    envelope: { attack: 0.015, decay: 0.2, sustain: 0.8, release: 0.2 },
+    volume: -18,
+  })
+
   // 电吉他：锯波 -> 预滤波 -> 失真（4x 过采样抑制混叠毛刺）-> 低通，走强力和声
   protected guitar = new Tone.PolySynth(Tone.Synth, {
     oscillator: { type: 'sawtooth' },
@@ -110,6 +117,7 @@ export class SynthEngine implements InstrumentEngine {
     this.click.connect(this.clickBus)
     this.bass.connect(this.bassBus)
     this.comp.connect(this.compBus)
+    this.organ.connect(this.compBus)
     this.guitar.chain(this.guitarPre, this.guitarDist, this.guitarFilter, this.guitarBus)
   }
 
@@ -142,8 +150,13 @@ export class SynthEngine implements InstrumentEngine {
     this.bass.triggerAttackRelease(midiToNote(midi), Math.max(dur, 0.05), time, vel)
   }
 
-  compChord(midis: number[], time: number, dur: number, vel = 0.7): void {
-    this.comp.triggerAttackRelease(midis.map(midiToNote), Math.max(dur, 0.06), time, vel)
+  compChord(midis: number[], time: number, dur: number, vel = 0.7, voice: CompVoice = 'piano'): void {
+    const notes = midis.map(midiToNote)
+    if (voice === 'organ') {
+      this.organ.triggerAttackRelease(notes, Math.max(dur, 0.12), time, vel)
+    } else {
+      this.comp.triggerAttackRelease(notes, Math.max(dur, 0.06), time, vel)
+    }
   }
 
   guitarChord(midis: number[], time: number, dur: number, vel = 0.7): void {
@@ -173,7 +186,7 @@ export class SynthEngine implements InstrumentEngine {
     const nodes = [
       this.kick, this.snare, this.snareTone, this.snareFilter, this.hihat, this.hihatFilter,
       this.openHat, this.ride, this.rideFilter, this.rim, this.click, this.bass, this.comp,
-      this.guitar, this.guitarPre, this.guitarDist, this.guitarFilter,
+      this.organ, this.guitar, this.guitarPre, this.guitarDist, this.guitarFilter,
       this.drumsBus, this.bassBus, this.compBus, this.guitarBus, this.clickBus, this.limiter,
     ]
     nodes.forEach(n => n.dispose())
@@ -237,12 +250,12 @@ export class SamplerEngine extends SynthEngine {
     super.drum(kind, time, vel)
   }
 
-  override compChord(midis: number[], time: number, dur: number, vel = 0.7): void {
-    if (this.piano.loaded) {
+  override compChord(midis: number[], time: number, dur: number, vel = 0.7, voice: CompVoice = 'piano'): void {
+    if (voice === 'piano' && this.piano.loaded) {
       this.piano.triggerAttackRelease(midis.map(midiToNote), Math.max(dur, 0.1), time, vel)
       return
     }
-    super.compChord(midis, time, dur, vel)
+    super.compChord(midis, time, dur, vel, voice)
   }
 
   override dispose(): void {

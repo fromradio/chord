@@ -1,5 +1,7 @@
-export type StyleId = 'jazz' | 'popRock' | 'blues' | 'bossa'
+export type StyleId = 'jazz' | 'bebop' | 'jazzBlues' | 'blues' | 'popRock' | 'gospel' | 'bossa' | 'latin' | 'afro'
 export type TrackId = 'drums' | 'bass' | 'comp' | 'guitar'
+/** comping 音色：钢琴 / 风琴（按风格池随机抽取） */
+export type CompVoice = 'piano' | 'organ'
 
 export type ChordQuality =
   | 'maj' | 'min' | 'dim' | 'aug'
@@ -117,9 +119,11 @@ export interface StyleDef {
   compHalf: RhythmPattern
   bass: Weighted<BassPattern>[]
   bassHalf: BassPattern
-  /** 电吉他节奏型（目前用于 Pop/Rock） */
+  /** 电吉他节奏型（目前用于 Pop/Rock、Afro） */
   guitar?: {
     comp: Weighted<RhythmPattern>[]
     half: RhythmPattern
   }
+  /** comping 音色池，每次生成随机抽取一种 */
+  compVoices?: CompVoice[]
 }

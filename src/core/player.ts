@@ -1,5 +1,5 @@
 import * as Tone from 'tone'
-import type { ChordSlot, Progression, TrackId } from '../types'
+import type { ChordSlot, CompVoice, Progression, StyleDef, TrackId } from '../types'
 import type { BassTarget, DrumKind } from '../types'
 import type { InstrumentEngine } from './instruments'
 import { SynthEngine } from './instruments'
@@ -47,6 +47,12 @@ function jitter(amount = 0.06): number {
   return (Math.random() - 0.5) * 2 * amount
 }
 
+/** 每次播放随机抽取该风格的 comping 音色 */
+function pickCompVoice(style: StyleDef): CompVoice {
+  const pool = style.compVoices?.length ? style.compVoices : (['piano'] as const)
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
 export class ChordPlayer {
   private engine: InstrumentEngine = new SynthEngine()
   private transport = Tone.getTransport()
@@ -80,7 +86,7 @@ export class ChordPlayer {
     if (s.countIn) this.scheduleCountIn()
     this.scheduleMetronome(offset, prog.bars.length)
     this.scheduleDrums(prog, offset)
-    this.scheduleSlots(prog, offset, spb)
+    this.scheduleSlots(prog, offset, spb, pickCompVoice(style))
 
     // count-in 小节只播一次，之后在小节 1..N 间循环
     t.loopStart = offset === 1 ? '1m' : 0
@@ -174,7 +180,7 @@ export class ChordPlayer {
     })
   }
 
-  private scheduleSlots(prog: Progression, offset: number, spb: number): void {
+  private scheduleSlots(prog: Progression, offset: number, spb: number, compVoice: CompVoice): void {
     const t = this.transport
     const style = STYLES[prog.styleId]
     prog.slots.forEach((slot, i) => {
@@ -190,7 +196,7 @@ export class ChordPlayer {
       compPat.hits.forEach(h => {
         t.schedule(time => {
           const vel = (h.pos % 1 === 0 ? 0.85 : 0.6) + jitter(0.05)
-          this.engine.compChord(slot.midi, time, h.dur * spb, vel)
+          this.engine.compChord(slot.midi, time, h.dur * spb, vel, compVoice)
         }, bbs(absBar, posInBar + h.pos))
       })
 

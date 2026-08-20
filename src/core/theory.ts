@@ -120,8 +120,8 @@ export function buildSlot(
   id: number,
 ): ChordSlot {
   const rootPc = mod12(key.pc + MAJOR_STEPS[spec.degree - 1] + (spec.alter ?? 0))
-  // 变化级数（如 bVII）按降号拼写，保持与常见记谱一致
-  const rootName = spec.alter ? pcToName(rootPc, true) : scale[spec.degree - 1]
+  // 变化级数拼写：降号级数（bVII/bIII）按降号，升号级数（#IV）按升号
+  const rootName = spec.alter ? pcToName(rootPc, spec.alter < 0) : scale[spec.degree - 1]
   const q = spec.quality
   const name = rootName + QUALITY_SUFFIX[q]
   const numeralBase = NUMERALS[spec.degree - 1]

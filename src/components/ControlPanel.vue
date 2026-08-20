@@ -32,7 +32,9 @@ function hasTrack(id: string): boolean {
           <option v-for="b in BAR_OPTIONS" :key="b" :value="b">{{ b }} 小节</option>
         </select>
       </label>
-      <p v-if="state.styleId === 'blues'" class="hint">布鲁斯按 8 / 12 小节 form 对齐，实际小节数可能微调</p>
+      <p v-if="state.styleId === 'blues' || state.styleId === 'jazzBlues'" class="hint">
+        布鲁斯 / 爵士布鲁斯按 8 / 12 小节 form 对齐，实际小节数可能微调
+      </p>
     </section>
 
     <section>

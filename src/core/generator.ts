@@ -1,6 +1,7 @@
 import type { Bar, BarTemplate, ChordSlot, ChordSpec, KeyDef, Progression, StyleDef } from '../types'
 import { STYLES } from './styles'
 import { blues12, blues8 } from './styles/blues'
+import { jazzBlues12, jazzBlues8 } from './styles/jazzBlues'
 import { buildSlot, scaleSpelling } from './theory'
 
 export function weightedPick<T extends { weight: number }>(items: T[]): T {
@@ -45,19 +46,22 @@ function applySpice(bars: BarTemplate[]): void {
   })
 }
 
-/** 布鲁斯：按 8/12 小节 form 对齐填满请求的小节数 */
-function bluesBars(bars: number): BarTemplate[] {
+/** 固定 form 风格（Blues / Jazz Blues）：按 8/12 小节 form 对齐填满请求的小节数 */
+function formBars(styleId: 'blues' | 'jazzBlues', bars: number): BarTemplate[] {
+  const mk12 = () =>
+    styleId === 'blues' ? blues12(Math.random() < 0.5, Math.random() < 0.4) : jazzBlues12()
+  const mk8 = () => (styleId === 'blues' ? blues8() : jazzBlues8())
   const forms: BarTemplate[][] = []
   let rem = bars
   while (rem >= 12) {
-    forms.push(blues12(Math.random() < 0.5, Math.random() < 0.4))
+    forms.push(mk12())
     rem -= 12
   }
   if (rem >= 8) {
-    forms.push(blues8())
+    forms.push(mk8())
     rem -= 8
   }
-  if (rem > 0) forms.push(blues8())
+  if (rem > 0) forms.push(mk8())
   return forms.flat().slice(0, bars)
 }
 
@@ -87,7 +91,8 @@ function genericBars(style: StyleDef, bars: number): BarTemplate[] {
 
 export function generateProgression(styleId: keyof typeof STYLES, key: KeyDef, bars: number): Progression {
   const style = STYLES[styleId]
-  const barTemplates = styleId === 'blues' ? bluesBars(bars) : genericBars(style, bars)
+  const isForm = styleId === 'blues' || styleId === 'jazzBlues'
+  const barTemplates = isForm ? formBars(styleId, bars) : genericBars(style, bars)
   const scale = scaleSpelling(key)
 
   const slots: ChordSlot[] = []
