@@ -6,3 +6,4 @@ dist
 .zcode
 
 .vercel
+gen-test.cjs
