@@ -32,31 +32,74 @@ export const jazz: StyleDef = {
     [[ii], [V]], // turnaround 结尾，循环时回到开头更顺
     [[I, VI7], [ii, V]],
   ],
-  drums: {
-    kick: [],
-    snare: [],
-    hihat: [1, 3], // 踩镲脚拍 2、4
-    ride: [0, 1, 1.5, 2, 3, 3.5], // swing ride：1 2& 3 4&
-  },
-  comp: {
-    // Charleston 律动
-    hits: [
-      { pos: 0, dur: 1.6 },
-      { pos: 1.5, dur: 0.45 },
-    ],
-  },
+  drums: [
+    {
+      weight: 4,
+      pattern: { ride: [0, 1, 1.5, 2, 3, 3.5], hihat: [1, 3] }, // 经典 swing ride + 踩镲脚拍
+    },
+    {
+      weight: 2,
+      pattern: { ride: [0, 1, 2, 3], hihat: [1, 3] }, // 四分 ride，更松弛
+    },
+    {
+      weight: 2,
+      pattern: { ride: [0, 1, 1.5, 2, 3, 3.5], hihat: [1, 3], snareGhost: [1.75, 3.25] },
+    },
+    {
+      weight: 1,
+      pattern: { ride: [0, 1, 2, 3], openHat: [3.5], hihat: [1, 3] },
+    },
+  ],
+  drumFills: [
+    { weight: 2, pattern: { kick: [0], snare: [1, 1.5, 2, 2.5, 3, 3.5], ride: [0, 2] } },
+    { weight: 1, pattern: { kick: [0, 2], snare: [3, 3.25, 3.5, 3.75], ride: [0, 1] } },
+  ],
+  comp: [
+    { weight: 3, pattern: { hits: [{ pos: 0, dur: 1.6 }, { pos: 1.5, dur: 0.45 }] } }, // Charleston
+    { weight: 2, pattern: { hits: [{ pos: 0, dur: 1.6 }, { pos: 1.5, dur: 0.45 }, { pos: 2.5, dur: 0.45 }] } },
+    { weight: 1, pattern: { hits: [{ pos: 0.5, dur: 0.45 }, { pos: 1.5, dur: 0.45 }, { pos: 2.5, dur: 0.45 }] } }, // 反拍
+  ],
   compHalf: {
     hits: [{ pos: 0, dur: 1.6 }],
   },
-  bass: {
-    // 行走贝斯：根 - 三 - 五 - 半音导入下一和弦
-    hits: [
-      { pos: 0, dur: 1, note: 'root' },
-      { pos: 1, dur: 1, note: 'third' },
-      { pos: 2, dur: 1, note: 'fifth' },
-      { pos: 3, dur: 1, note: 'approach' },
-    ],
-  },
+  bass: [
+    {
+      // 行走贝斯：根 - 三 - 五 - 半音导入
+      weight: 3,
+      pattern: {
+        hits: [
+          { pos: 0, dur: 1, note: 'root' },
+          { pos: 1, dur: 1, note: 'third' },
+          { pos: 2, dur: 1, note: 'fifth' },
+          { pos: 3, dur: 1, note: 'approach' },
+        ],
+      },
+    },
+    {
+      // 根 - 五 - 六 - 半音导入
+      weight: 2,
+      pattern: {
+        hits: [
+          { pos: 0, dur: 1, note: 'root' },
+          { pos: 1, dur: 1, note: 'fifth' },
+          { pos: 2, dur: 1, note: 'sixth' },
+          { pos: 3, dur: 1, note: 'approach' },
+        ],
+      },
+    },
+    {
+      // 根 - 三 - 八度 - 半音导入
+      weight: 1,
+      pattern: {
+        hits: [
+          { pos: 0, dur: 1, note: 'root' },
+          { pos: 1, dur: 1, note: 'third' },
+          { pos: 2, dur: 1, note: 'octave' },
+          { pos: 3, dur: 1, note: 'approach' },
+        ],
+      },
+    },
+  ],
   bassHalf: {
     hits: [{ pos: 0, dur: 2, note: 'root' }],
   },

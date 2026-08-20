@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { BAR_OPTIONS, TRACK_IDS, TRACK_NAMES, generate, state } from '../composables/store'
+import { BAR_OPTIONS, TRACK_IDS, TRACK_NAMES, generate, state, ui } from '../composables/store'
 import { KEYS } from '../core/theory'
 import { STYLE_LIST, STYLES } from '../core/styles'
 
 const styleDef = computed(() => STYLES[state.styleId])
+function hasTrack(id: string): boolean {
+  return id !== 'guitar' || !!styleDef.value.guitar
+}
 </script>
 
 <template>
@@ -51,10 +54,11 @@ const styleDef = computed(() => STYLES[state.styleId])
 
     <section>
       <h3>乐器组</h3>
-      <div v-for="id in TRACK_IDS" :key="id" class="track">
+      <div v-for="id in TRACK_IDS" :key="id" class="track" :class="{ unused: !hasTrack(id) }">
         <label class="check">
-          <input type="checkbox" v-model="state.tracks[id].on" />
+          <input type="checkbox" v-model="state.tracks[id].on" :disabled="!hasTrack(id)" />
           <span>{{ TRACK_NAMES[id] }}</span>
+          <span v-if="!hasTrack(id)" class="unused-tag">当前风格未使用</span>
         </label>
         <div class="track-vol">
           <input
@@ -64,7 +68,7 @@ const styleDef = computed(() => STYLES[state.styleId])
             max="0"
             step="1"
             v-model.number="state.tracks[id].db"
-            :disabled="!state.tracks[id].on"
+            :disabled="!state.tracks[id].on || !hasTrack(id)"
           />
           <span class="db">{{ state.tracks[id].db }} dB</span>
         </div>
@@ -76,6 +80,17 @@ const styleDef = computed(() => STYLES[state.styleId])
           <span class="db">{{ state.masterDb }} dB</span>
         </div>
       </div>
+    </section>
+
+    <section>
+      <h3>音源</h3>
+      <div class="seg engine-seg">
+        <button :class="{ active: state.engine === 'synth' }" @click="state.engine = 'synth'">合成</button>
+        <button :class="{ active: state.engine === 'sampler' }" @click="state.engine = 'sampler'">
+          采样{{ ui.samplerLoading ? '（加载中…）' : '' }}
+        </button>
+      </div>
+      <p class="hint">采样模式：钢琴与鼓组使用真实采样（Salamander 钢琴 + 鼓机），首次需联网加载，其余声部仍为合成</p>
     </section>
 
     <section>
@@ -197,8 +212,18 @@ select:focus {
   width: 100%;
   accent-color: var(--accent);
 }
+.track.unused {
+  opacity: 0.45;
+}
+.unused-tag {
+  font-size: 11px;
+  color: var(--text-faint);
+}
 .seg-field {
   margin-top: 2px;
+}
+.engine-seg button {
+  flex: 1;
 }
 .seg {
   display: flex;

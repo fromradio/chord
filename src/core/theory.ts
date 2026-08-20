@@ -134,6 +134,9 @@ export function buildSlot(
   // 和弦音过多时优先省略纯五音，保留色彩音（3/7/9/6）
   if (upper.length > 3) upper = upper.filter(iv => mod12(iv) !== 7)
   const midi = [48 + rootPc, ...upper.slice(0, 3).map(iv => 60 + mod12(rootPc + iv))]
+  // 电吉他强力和声：根音 + 五音 + 八度（E2 起）
+  const guitarRoot = 40 + rootPc
+  const powerMidi = [guitarRoot, guitarRoot + 7, guitarRoot + 12]
 
   return {
     id,
@@ -144,6 +147,7 @@ export function buildSlot(
     startBeat,
     lenBeats,
     midi,
+    powerMidi,
     bassMidi: 36 + rootPc,
   }
 }

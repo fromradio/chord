@@ -1,9 +1,9 @@
-import type { Bar, BarTemplate, ChordSlot, KeyDef, Progression, StyleDef } from '../types'
+import type { Bar, BarTemplate, ChordSlot, ChordSpec, KeyDef, Progression, StyleDef } from '../types'
 import { STYLES } from './styles'
 import { blues12, blues8 } from './styles/blues'
 import { buildSlot, scaleSpelling } from './theory'
 
-function weightedPick<T extends { weight: number }>(items: T[]): T {
+export function weightedPick<T extends { weight: number }>(items: T[]): T {
   const total = items.reduce((s, i) => s + i.weight, 0)
   let r = Math.random() * total
   for (const it of items) {
@@ -11,6 +11,38 @@ function weightedPick<T extends { weight: number }>(items: T[]): T {
     if (r <= 0) return it
   }
   return items[items.length - 1]
+}
+
+function cloneBars(bars: BarTemplate[]): BarTemplate[] {
+  return bars.map(b => b.map(s => ({ ...s })))
+}
+
+/**
+ * 和声加料（原地修改，输入必须是克隆）：
+ * - ii7 后接 V7 时有概率变成 II7（副属 V7/V）
+ * - vi(m) 后接 ii/IV 时有概率变成 VI7（副属 V7/ii）
+ * - maj7 偶尔换成 maj6 增加色彩
+ */
+function applySpice(bars: BarTemplate[]): void {
+  const flat = bars.flat()
+  flat.forEach((spec, i) => {
+    const next = flat[i + 1]
+    if (next) {
+      if (spec.quality === 'min7' && spec.degree === 2 && next.degree === 5 && next.quality === 'dom7') {
+        if (Math.random() < 0.3) spec.quality = 'dom7'
+        return
+      }
+      if (
+        (spec.quality === 'min7' || spec.quality === 'min') &&
+        spec.degree === 6 &&
+        (next.degree === 2 || next.degree === 4)
+      ) {
+        if (Math.random() < 0.2) spec.quality = 'dom7'
+        return
+      }
+    }
+    if (spec.quality === 'maj7' && Math.random() < 0.12) spec.quality = 'maj6'
+  })
 }
 
 /** 布鲁斯：按 8/12 小节 form 对齐填满请求的小节数 */
@@ -45,10 +77,11 @@ function genericBars(style: StyleDef, bars: number): BarTemplate[] {
     }
     const tpl = weightedPick(pool)
     lastTpl = tpl
-    out.push(...tpl.bars)
+    out.push(...cloneBars(tpl.bars))
   }
   const tailTaken = Math.min(tail.length, bars - out.length)
-  out.push(...tail.slice(tail.length - tailTaken))
+  out.push(...cloneBars(tail.slice(tail.length - tailTaken)))
+  applySpice(out)
   return out
 }
 

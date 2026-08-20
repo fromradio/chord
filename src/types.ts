@@ -1,5 +1,5 @@
 export type StyleId = 'jazz' | 'popRock' | 'blues' | 'bossa'
-export type TrackId = 'drums' | 'bass' | 'comp'
+export type TrackId = 'drums' | 'bass' | 'comp' | 'guitar'
 
 export type ChordQuality =
   | 'maj' | 'min' | 'dim' | 'aug'
@@ -36,6 +36,8 @@ export interface ChordSlot {
   lenBeats: number
   /** comping 用 voicing（MIDI 音符，含低音根音） */
   midi: number[]
+  /** 电吉他强力和声（MIDI 音符） */
+  powerMidi: number[]
   /** 贝斯根音（MIDI） */
   bassMidi: number
 }
@@ -52,7 +54,8 @@ export interface Progression {
   slots: ChordSlot[]
 }
 
-export type BassTarget = 'root' | 'third' | 'fifth' | 'octave' | 'approach'
+export type BassTarget =
+  | 'root' | 'third' | 'fifth' | 'sixth' | 'b7' | 'octave' | 'approach'
 
 export interface RhythmHit {
   /** 槽内拍位（0 起，4/4 一小节 4 拍） */
@@ -65,12 +68,30 @@ export interface BassHit extends RhythmHit {
   note: BassTarget
 }
 
+export type DrumKind = 'kick' | 'snare' | 'snareGhost' | 'hihat' | 'openHat' | 'ride' | 'rim'
+
 export interface DrumPattern {
-  kick: number[]
-  snare: number[]
-  hihat: number[]
+  kick?: number[]
+  snare?: number[]
+  /** 弱音小军鼓（ghost note） */
+  snareGhost?: number[]
+  hihat?: number[]
+  openHat?: number[]
   ride?: number[]
   rim?: number[]
+}
+
+export interface RhythmPattern {
+  hits: RhythmHit[]
+}
+export interface BassPattern {
+  hits: BassHit[]
+}
+
+/** 带权重的节奏型，运行时随机抽取实现「每次生成都不一样」 */
+export interface Weighted<T> {
+  weight: number
+  pattern: T
 }
 
 export interface TemplateDef {
@@ -88,9 +109,17 @@ export interface StyleDef {
   tonic: ChordQuality
   templates: TemplateDef[]
   cadences: BarTemplate[][]
-  drums: DrumPattern
-  comp: { hits: RhythmHit[] }
-  compHalf: { hits: RhythmHit[] }
-  bass: { hits: BassHit[] }
-  bassHalf: { hits: BassHit[] }
+  /** 鼓组主节奏型（逐小节随机抽取） */
+  drums: Weighted<DrumPattern>[]
+  /** 乐句末（每 4 小节）随机使用的鼓填充 */
+  drumFills?: Weighted<DrumPattern>[]
+  comp: Weighted<RhythmPattern>[]
+  compHalf: RhythmPattern
+  bass: Weighted<BassPattern>[]
+  bassHalf: BassPattern
+  /** 电吉他节奏型（目前用于 Pop/Rock） */
+  guitar?: {
+    comp: Weighted<RhythmPattern>[]
+    half: RhythmPattern
+  }
 }
