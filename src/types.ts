@@ -17,12 +17,24 @@ export interface KeyDef {
   flats: boolean
 }
 
-/** 级数表示的和弦：degree 为大调音阶级数 1-7，alter 为半音偏移（如 bVII） */
+/** 转位和弦的低音（音级指定，如 V/3 = G/B） */
+export interface BassSpec {
+  degree: number
+  alter?: number
+}
+
+/** 级数表示的和弦：degree 为大调音阶级数 1-7，alter 为半音偏移（如 bVII），shift 为整段移调偏移 */
 export interface ChordSpec {
   degree: number
   alter?: number
   quality: ChordQuality
+  bass?: BassSpec
+  /** 段落移调（半音），用于 B 段整体升调 */
+  shift?: number
 }
+
+/** 鼓加花密度挡位 */
+export type FillLevel = 'off' | 'low' | 'medium' | 'high' | 'crazy'
 
 /** 一个小节模板：1 个和弦（整小节）或 2 个和弦（各半小节） */
 export type BarTemplate = ChordSpec[]

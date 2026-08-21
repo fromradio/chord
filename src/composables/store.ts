@@ -1,5 +1,6 @@
 import { reactive, shallowRef, watch } from 'vue'
 import type { Progression, StyleId, TrackId } from '../types'
+import type { FillLevel } from '../types'
 import { STYLES } from '../core/styles'
 import { generateProgression } from '../core/generator'
 import { ChordPlayer } from '../core/player'
@@ -31,6 +32,7 @@ export const state = reactive({
   metronome: false,
   countIn: true,
   masterDb: -6,
+  fillLevel: 'medium' as FillLevel,
 })
 
 export const ui = reactive({
@@ -55,7 +57,12 @@ let samplerEngine: SamplerEngine | null = null
 let samplerReady = false
 
 function snapshot() {
-  return { bpm: state.bpm, metronome: state.metronome, countIn: state.countIn }
+  return {
+    bpm: state.bpm,
+    metronome: state.metronome,
+    countIn: state.countIn,
+    fillLevel: state.fillLevel,
+  }
 }
 
 function applyAudioSettings(): void {
@@ -95,6 +102,14 @@ watch(() => state.styleId, id => {
   generate()
 })
 watch(() => [state.keyPc, state.bars], () => generate())
+// 播放中切换加花挡位：重新调度使其立即生效
+watch(
+  () => state.fillLevel,
+  () => {
+    player.fillLevel = state.fillLevel
+    if (ui.playing && progression.value) void player.start(progression.value, snapshot())
+  },
+)
 watch(
   () => state.engine,
   mode => {

@@ -106,9 +106,12 @@ export function midiToNote(m: number): string {
   return SHARP_NAMES[mod12(m)] + (Math.floor(m / 12) - 1)
 }
 
-/** ChordSpec 构造简写 */
-export function ch(degree: number, quality: ChordQuality, alter?: number): ChordSpec {
-  return { degree, quality, alter }
+/** ChordSpec 构造简写：ch(级数, 质量, 半音偏移, 低音级数) */
+export function ch(degree: number, quality: ChordQuality, alter?: number, bassDegree?: number): ChordSpec {
+  const spec: ChordSpec = { degree, quality }
+  if (alter !== undefined) spec.alter = alter
+  if (bassDegree !== undefined) spec.bass = { degree: bassDegree }
+  return spec
 }
 
 export function buildSlot(
@@ -119,21 +122,38 @@ export function buildSlot(
   scale: string[],
   id: number,
 ): ChordSlot {
-  const rootPc = mod12(key.pc + MAJOR_STEPS[spec.degree - 1] + (spec.alter ?? 0))
-  // 变化级数拼写：降号级数（bVII/bIII）按降号，升号级数（#IV）按升号
-  const rootName = spec.alter ? pcToName(rootPc, spec.alter < 0) : scale[spec.degree - 1]
+  const shift = spec.shift ?? 0
+  const rootPc = mod12(key.pc + MAJOR_STEPS[spec.degree - 1] + (spec.alter ?? 0) + shift)
+  // 变化级数/移调段按偏移方向选拼写：降号级数（bVII）与下行移调用降号，其余用升号
+  const useDiatonicRoot = spec.alter === undefined && shift === 0
+  const rootName = useDiatonicRoot
+    ? scale[spec.degree - 1]
+    : pcToName(rootPc, (spec.alter ?? 0) < 0 || shift < 0)
   const q = spec.quality
-  const name = rootName + QUALITY_SUFFIX[q]
-  const numeralBase = NUMERALS[spec.degree - 1]
-  const numeral = MINORISH.has(q) ? numeralBase.toLowerCase() : numeralBase
-  const roman =
-    (spec.alter === -1 ? 'b' : spec.alter === 1 ? '#' : '') + numeral + ROMAN_SUFFIX[q]
+  let name = rootName + QUALITY_SUFFIX[q]
+  let roman =
+    (spec.alter === -1 ? 'b' : spec.alter === 1 ? '#' : '') +
+    (MINORISH.has(q) ? NUMERALS[spec.degree - 1].toLowerCase() : NUMERALS[spec.degree - 1]) +
+    ROMAN_SUFFIX[q]
+
+  // 转位：低音级数决定贝斯与 comping 最低声部
+  let bassPc = rootPc
+  if (spec.bass) {
+    const bAlter = spec.bass.alter ?? 0
+    bassPc = mod12(key.pc + MAJOR_STEPS[spec.bass.degree - 1] + bAlter + shift)
+    const bassName =
+      bAlter !== 0 || shift !== 0
+        ? pcToName(bassPc, bAlter < 0 || shift < 0)
+        : scale[spec.bass.degree - 1]
+    name += '/' + bassName
+    roman += '/' + spec.bass.degree
+  }
 
   const ivs = QUALITY_INTERVALS[q]
   let upper = ivs.filter(iv => iv > 0)
   // 和弦音过多时优先省略纯五音，保留色彩音（3/7/9/6）
   if (upper.length > 3) upper = upper.filter(iv => mod12(iv) !== 7)
-  const midi = [48 + rootPc, ...upper.slice(0, 3).map(iv => 60 + mod12(rootPc + iv))]
+  const midi = [48 + bassPc, ...upper.slice(0, 3).map(iv => 60 + mod12(rootPc + iv))]
   // 电吉他强力和声：根音 + 五音 + 八度（E2 起）
   const guitarRoot = 40 + rootPc
   const powerMidi = [guitarRoot, guitarRoot + 7, guitarRoot + 12]
@@ -148,6 +168,6 @@ export function buildSlot(
     lenBeats,
     midi,
     powerMidi,
-    bassMidi: 36 + rootPc,
+    bassMidi: 36 + bassPc,
   }
 }

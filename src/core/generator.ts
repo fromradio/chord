@@ -166,8 +166,8 @@ function genericBars(style: StyleDef, styleId: StyleId, bars: number): BarTempla
       if (linked.length > 0) pool = linked
       else if (noRepeat.length > 0) pool = noRepeat
     }
-    // 乐句开头（每 4 小节）交替主功能/色彩开头
-    if (out.length % 4 === 0 && pool.length > 1) {
+    // 乐句开头（每 4 小节）交替主功能/色彩开头（首句保持自然加权）
+    if (out.length > 0 && out.length % 4 === 0 && pool.length > 1) {
       const preferTonic = !lastOpenedOnTonic
       const shaped = pool.filter(tp => entryIsTonic(tp) === preferTonic)
       if (shaped.length > 0) pool = shaped
@@ -180,6 +180,13 @@ function genericBars(style: StyleDef, styleId: StyleId, bars: number): BarTempla
   }
   const tailTaken = Math.min(tail.length, bars - out.length)
   out.push(...cloneBars(tail.slice(tail.length - tailTaken)))
+  // 段落动态：16 小节以上时，B 段（第 9 小节起到终止式前）整体上移大二度，结尾回落原调
+  if (bars >= 16 && Math.random() < 0.4) {
+    const bEnd = out.length - tailTaken
+    for (let i = 8; i < bEnd; i++) {
+      out[i] = out[i].map(s => ({ ...s, shift: (s.shift ?? 0) + 2 }))
+    }
+  }
   applySpice(out, styleId)
   return out
 }

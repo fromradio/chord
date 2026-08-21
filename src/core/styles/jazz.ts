@@ -2,10 +2,12 @@ import { ch } from '../theory'
 import type { StyleDef } from '../../types'
 
 const I = ch(1, 'maj7')
+const I3 = ch(1, 'maj7', undefined, 3) // Cmaj7/E
 const ii = ch(2, 'min7')
 const iii = ch(3, 'min7')
 const IV = ch(4, 'maj7')
 const V = ch(5, 'dom7')
+const V7b = ch(5, 'dom7', undefined, 7) // G7/F
 const vi = ch(6, 'min7')
 const VI7 = ch(6, 'dom7') // V7/ii
 const bVII7 = ch(7, 'dom7', -1) // backdoor
@@ -27,6 +29,7 @@ export const jazz: StyleDef = {
     { weight: 1, bars: [[I], [IV], [iii, vi], [ii, V]] },
     { weight: 2, bars: [[ii, V]] }, // 单小节 ii-V，减少主和弦静态填充
     { weight: 1, bars: [[iii, VI7]] },
+    { weight: 1, bars: [[I], [I3], [IV], [V7b]] }, // 级进低音线
   ],
   cadences: [
     [[ii], [V], [I]],
@@ -55,6 +58,7 @@ export const jazz: StyleDef = {
   drumFills: [
     { weight: 2, pattern: { kick: [0], snare: [1, 1.5, 2, 2.5, 3, 3.5], ride: [0, 2] } },
     { weight: 1, pattern: { kick: [0, 2], snare: [3, 3.25, 3.5, 3.75], ride: [0, 1] } },
+    { weight: 1, pattern: { ride: [0, 1], snare: [1.5, 2, 2.5, 3, 3.25, 3.5, 3.75], kick: [0] } },
   ],
   comp: [
     { weight: 3, pattern: { hits: [{ pos: 0, dur: 1.6 }, { pos: 1.5, dur: 0.45 }] } }, // Charleston

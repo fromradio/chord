@@ -3,10 +3,12 @@ import type { StyleDef } from '../../types'
 
 const I = ch(1, 'maj7')
 const II7 = ch(2, 'dom7')
+const bII7 = ch(2, 'dom7', -1) // 三全音替代 / Coltrane 环节
 const ii = ch(2, 'min7')
 const III7 = ch(3, 'dom7')
 const iii = ch(3, 'min7')
 const IV = ch(4, 'maj7')
+const IV7 = ch(4, 'dom7')
 const V = ch(5, 'dom7')
 const vi = ch(6, 'min7')
 const VI7 = ch(6, 'dom7')
@@ -28,6 +30,7 @@ export const bebop: StyleDef = {
     { weight: 1, bars: [[I], [vi], [ii], [V]] },
     { weight: 2, bars: [[ii, V]] },
     { weight: 1, bars: [[I], [IV], [ii, V], [I]] },
+    { weight: 1, bars: [[I, VI7], [IV7, bII7], [V, I]] }, // Coltrane changes（大三度循环）
   ],
   cadences: [
     [[ii], [V], [I]],

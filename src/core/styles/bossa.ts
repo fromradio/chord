@@ -2,11 +2,13 @@ import { ch } from '../theory'
 import type { StyleDef } from '../../types'
 
 const Imaj7 = ch(1, 'maj7')
+const Imaj3 = ch(1, 'maj7', undefined, 3) // Cmaj7/E
 const II7 = ch(2, 'dom7') // V7/V
 const ii7 = ch(2, 'min7')
 const iii7 = ch(3, 'min7')
 const IVmaj7 = ch(4, 'maj7')
 const V7 = ch(5, 'dom7')
+const V73 = ch(5, 'dom7', undefined, 3) // G7/B
 const vi7 = ch(6, 'min7')
 const VI7 = ch(6, 'dom7')
 const bVII7 = ch(7, 'dom7', -1) // backdoor
@@ -28,6 +30,7 @@ export const bossa: StyleDef = {
     { weight: 2, bars: [[ii7, V7]] }, // 单小节 ii-V 回转，减少主和弦静态填充
     { weight: 1, bars: [[Imaj7], [VI7]] },
     { weight: 1, bars: [[vi7], [ii7], [V7], [Imaj7]] },
+    { weight: 1, bars: [[Imaj7], [Imaj3], [vi7], [V73]] }, // 级进低音
   ],
   cadences: [
     [[ii7, V7], [Imaj7]],

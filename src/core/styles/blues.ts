@@ -24,6 +24,7 @@ export const blues: StyleDef = {
   drumFills: [
     { weight: 2, pattern: { kick: [0, 2], snare: [1, 3, 3.25, 3.5], hihat: [] } },
     { weight: 1, pattern: { kick: [0], snare: [1.5, 2, 2.5, 3, 3.25, 3.5, 3.75], ride: [0] } },
+    { weight: 1, pattern: { kick: [0], snare: [2, 2.25, 2.5, 2.75, 3, 3.5], hihat: [] } },
   ],
   comp: [
     {

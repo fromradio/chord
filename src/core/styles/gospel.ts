@@ -3,12 +3,14 @@ import type { StyleDef } from '../../types'
 
 const Imaj7 = ch(1, 'maj7')
 const Imaj9 = ch(1, 'maj9')
+const Imaj3 = ch(1, 'maj9', undefined, 3) // Cmaj9/E
 const II7 = ch(2, 'dom7')
 const ii7 = ch(2, 'min7')
 const iii7 = ch(3, 'min7')
 const IVmaj7 = ch(4, 'maj7')
 const IV9 = ch(4, 'dom9')
 const V9 = ch(5, 'dom9')
+const V93 = ch(5, 'dom9', undefined, 3) // G9/B
 const vi7 = ch(6, 'min7')
 const bVII7 = ch(7, 'dom7', -1) // 教堂后门终止
 
@@ -30,6 +32,7 @@ export const gospel: StyleDef = {
     { weight: 1, bars: [[Imaj9], [II7], [ii7], [V9]] },
     { weight: 2, bars: [[ii7, V9]] },
     { weight: 1, bars: [[Imaj9], [iii7]] },
+    { weight: 1, bars: [[Imaj9], [Imaj3], [IVmaj7], [V93]] }, // 级进低音
   ],
   cadences: [
     [[ii7], [V9], [Imaj9]],

@@ -1,5 +1,5 @@
 import * as Tone from 'tone'
-import type { ChordSlot, CompVoice, Progression, StyleDef, TrackId } from '../types'
+import type { ChordSlot, CompVoice, FillLevel, Progression, StyleDef, TrackId } from '../types'
 import type { BassTarget, DrumKind } from '../types'
 import type { InstrumentEngine } from './instruments'
 import { SynthEngine } from './instruments'
@@ -11,6 +11,7 @@ export interface PlayerSettings {
   bpm: number
   metronome: boolean
   countIn: boolean
+  fillLevel: FillLevel
 }
 
 /** 小节内拍位 -> Bars:Beats:Sixteenths */
@@ -58,6 +59,7 @@ export class ChordPlayer {
   private transport = Tone.getTransport()
   playing = false
   metronome = false
+  fillLevel: FillLevel = 'medium'
   onSlot?: (i: number) => void
   onCountInBeat?: (b: number) => void
 
@@ -71,6 +73,7 @@ export class ChordPlayer {
     await Tone.start()
     this.stop()
     this.metronome = s.metronome
+    this.fillLevel = s.fillLevel
     this.playing = true
 
     const t = this.transport
@@ -154,11 +157,15 @@ export class ChordPlayer {
   private scheduleDrums(prog: Progression, offset: number): void {
     const t = this.transport
     const style = STYLES[prog.styleId]
+    // 加花挡位：乐句末（每 4 小节）触发概率 + 高/疯挡位在乐句中间的额外触发
+    const phraseChance: Record<FillLevel, number> = { off: 0, low: 0.3, medium: 0.65, high: 1, crazy: 1 }
     prog.bars.forEach((_, i) => {
       const bar = offset + i
-      // 每 4 小节乐句末随机使用鼓填充
-      const phraseEnd = (i + 1) % 4 === 0 && prog.bars.length >= 8
-      const useFill = !!style.drumFills?.length && phraseEnd && Math.random() < 0.65
+      let fillChance = 0
+      if ((i + 1) % 4 === 0 && prog.bars.length >= 8) fillChance = phraseChance[this.fillLevel]
+      else if (this.fillLevel === 'high' && (i + 1) % 2 === 0) fillChance = 0.35
+      else if (this.fillLevel === 'crazy') fillChance = 0.4
+      const useFill = !!style.drumFills?.length && Math.random() < fillChance
       const d = weightedPick(useFill ? style.drumFills! : style.drums).pattern
 
       const add = (pos: number, cb: (time: number) => void) => t.schedule(cb, bbs(bar, pos))

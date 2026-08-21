@@ -112,6 +112,17 @@ function hasTrack(id: string): boolean {
           <button :class="{ active: state.display === 'roman' }" @click="state.display = 'roman'">级数</button>
         </div>
       </div>
+      <div class="field seg-field">
+        <span>鼓加花</span>
+        <div class="seg fill-seg">
+          <button :class="{ active: state.fillLevel === 'off' }" @click="state.fillLevel = 'off'">关</button>
+          <button :class="{ active: state.fillLevel === 'low' }" @click="state.fillLevel = 'low'">低</button>
+          <button :class="{ active: state.fillLevel === 'medium' }" @click="state.fillLevel = 'medium'">中</button>
+          <button :class="{ active: state.fillLevel === 'high' }" @click="state.fillLevel = 'high'">高</button>
+          <button :class="{ active: state.fillLevel === 'crazy' }" @click="state.fillLevel = 'crazy'">疯</button>
+        </div>
+      </div>
+      <p class="hint">「疯」档每小节都可能触发鼓填充，长谱（16 小节起）可能随机出现 B 段整体升调</p>
     </section>
 
     <button class="generate" @click="generate()">🎲 随机生成</button>
@@ -226,6 +237,10 @@ select:focus {
 }
 .engine-seg button {
   flex: 1;
+}
+.fill-seg button {
+  padding: 6px 8px;
+  font-size: 12px;
 }
 .seg {
   display: flex;

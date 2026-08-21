@@ -2,11 +2,14 @@ import { ch } from '../theory'
 import type { StyleDef } from '../../types'
 
 const I = ch(1, 'maj')
+const I3 = ch(1, 'maj', undefined, 3) // C/E
 const ii = ch(2, 'min7')
 const bIII = ch(3, 'maj', -1)
 const iii = ch(3, 'min')
 const IV = ch(4, 'maj')
 const V = ch(5, 'maj')
+const V3 = ch(5, 'maj', undefined, 3) // G/B
+const V7b = ch(5, 'maj', undefined, 7) // G/F
 const vi = ch(6, 'min')
 const bVII = ch(7, 'maj', -1)
 
@@ -32,6 +35,10 @@ export const popRock: StyleDef = {
     { weight: 2, bars: [[I], [V]] },
     { weight: 1, bars: [[vi], [IV]] },
     { weight: 1, bars: [[IV], [I]] }, // 变格进行
+    { weight: 2, bars: [[I], [V3], [vi], [IV]] }, // 低音下行 C G/B Am F
+    { weight: 1, bars: [[I], [I3], [IV], [V7b]] }, // 级进低音 C C/E F G/F
+    { weight: 2, bars: [[I, V]] }, // 单小节 split，便于填充奇数长度
+    { weight: 1, bars: [[vi, IV]] },
   ],
   cadences: [
     [[IV], [V], [I]],
@@ -53,6 +60,8 @@ export const popRock: StyleDef = {
   drumFills: [
     { weight: 2, pattern: { kick: [0, 2], snare: [1, 3, 3.25, 3.5, 3.75], hihat: [0] } },
     { weight: 1, pattern: { kick: [0], snare: [1, 1.5, 2, 2.5, 3, 3.25, 3.5, 3.75], openHat: [0] } },
+    { weight: 1, pattern: { kick: [0, 1, 1.5, 2], snare: [2.5, 2.75, 3, 3.25, 3.5, 3.75] } },
+    { weight: 1, pattern: { kick: [0, 2], snare: [1, 2.5, 3], hihat: [0], openHat: [3.5] } },
   ],
   // 钢琴声部在摇滚里退居长音铺垫，律动交给吉他
   comp: [
