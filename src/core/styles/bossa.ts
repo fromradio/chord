@@ -9,6 +9,7 @@ const IVmaj7 = ch(4, 'maj7')
 const V7 = ch(5, 'dom7')
 const vi7 = ch(6, 'min7')
 const VI7 = ch(6, 'dom7')
+const bVII7 = ch(7, 'dom7', -1) // backdoor
 
 const eighthHats = [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5]
 
@@ -31,6 +32,7 @@ export const bossa: StyleDef = {
   cadences: [
     [[ii7, V7], [Imaj7]],
     [[ii7], [V7]],
+    [[bVII7], [Imaj7]], // backdoor 终止
   ],
   drums: [
     {

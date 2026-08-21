@@ -36,6 +36,7 @@ export const popRock: StyleDef = {
   cadences: [
     [[IV], [V], [I]],
     [[IV], [V]],
+    [[bVII], [IV], [I]], // 摇滚式终止
   ],
   drums: [
     { weight: 3, pattern: { kick: [0, 2, 2.5], snare: [1, 3], hihat: eighthHats } },

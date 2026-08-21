@@ -10,6 +10,7 @@ const IV = ch(4, 'maj7')
 const V = ch(5, 'dom7')
 const vi = ch(6, 'min7')
 const VI7 = ch(6, 'dom7')
+const bVII7 = ch(7, 'dom7', -1) // backdoor
 
 export const bebop: StyleDef = {
   id: 'bebop',
@@ -32,6 +33,7 @@ export const bebop: StyleDef = {
     [[ii], [V], [I]],
     [[ii], [V]],
     [[iii, VI7], [ii, V]],
+    [[bVII7], [I]], // backdoor 终止
   ],
   drums: [
     { weight: 4, pattern: { ride: [0, 1, 1.5, 2, 3, 3.5], hihat: [1, 3] } },

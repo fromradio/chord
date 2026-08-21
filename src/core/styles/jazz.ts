@@ -8,6 +8,7 @@ const IV = ch(4, 'maj7')
 const V = ch(5, 'dom7')
 const vi = ch(6, 'min7')
 const VI7 = ch(6, 'dom7') // V7/ii
+const bVII7 = ch(7, 'dom7', -1) // backdoor
 
 export const jazz: StyleDef = {
   id: 'jazz',
@@ -31,6 +32,7 @@ export const jazz: StyleDef = {
     [[ii], [V], [I]],
     [[ii], [V]], // turnaround 结尾，循环时回到开头更顺
     [[I, VI7], [ii, V]],
+    [[bVII7], [I]], // backdoor 终止
   ],
   drums: [
     {
